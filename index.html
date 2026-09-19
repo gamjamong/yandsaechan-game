@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>내 머리 속 제시어 - 몽골 초원 게임</title>
+<style>
+  :root {
+    --sky-top: #4a9fd8;
+    --sky-mid: #a9dcf2;
+    --sky-glow: #fff3c4;
+    --grass-1: #d8ec9a;
+    --grass-2: #8bc34a;
+    --grass-3: #558b2f;
+    --felt-red: #b23a2f;
+    --felt-red-dark: #8c2c23;
+    --gold: #d4a017;
+    --wood: #7a4a2b;
+    --wood-dark: #5a3319;
+    --card-bg: rgba(255, 250, 235, 0.92);
+    --text-dark: #3b2b1a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(
+      to bottom,
+      var(--sky-top) 0%,
+      var(--sky-mid) 32%,
+      var(--sky-glow) 46%,
+      var(--grass-1) 52%,
+      var(--grass-2) 68%,
+      var(--grass-3) 100%
+    );
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 배경 장식: 해 */
+  .sun {
+    position: fixed;
+    top: 6%;
+    right: 8%;
+    width: clamp(50px, 10vw, 110px);
+    height: clamp(50px, 10vw, 110px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff8dc, #ffd35c 55%, #ffb400 100%);
+    box-shadow: 0 0 60px 20px rgba(255, 214, 92, 0.55);
+    z-index: 0;
+  }
+
+  /* 배경 장식: 게르(몽골 전통 텐트) */
+  .ger {
+    position: fixed;
+    bottom: 28%;
+    width: clamp(40px, 7vw, 70px);
+    height: clamp(28px, 5vw, 48px);
+    z-index: 0;
+    opacity: 0.85;
+  }
+  .ger .roof {
+    position: absolute;
+    top: -40%;
+    left: 10%;
+    width: 80%;
+    height: 55%;
+    background: #8b5e3c;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  }
+  .ger .body {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 65%;
+    background: #f2e6d0;
+    border: 2px solid #c9b896;
+    border-radius: 4px 4px 0 0;
+  }
+  .ger.g1 { left: 6%; bottom: 30%; }
+  .ger.g2 { left: 16%; bottom: 26%; transform: scale(0.8); }
+  .ger.g3 { right: 10%; bottom: 27%; transform: scale(0.9); }
+
+  .hill {
+    position: fixed;
+    bottom: 18%;
+    width: 60vw;
+    height: 12vh;
+    background: rgba(85, 139, 47, 0.55);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .hill.h1 { left: -20vw; }
+  .hill.h2 { right: -25vw; bottom: 16%; background: rgba(139, 195, 74, 0.5); }
+
+  .app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 960px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  h1.title {
+    font-size: clamp(20px, 4vw, 30px);
+    color: #fffbe8;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 2px var(--felt-red-dark);
+    margin: 10px 0 20px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; }
+
+  .card {
+    background: var(--card-bg);
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+
+  .card h2 {
+    margin-top: 0;
+    text-align: center;
+    color: var(--felt-red-dark);
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin: 12px 0 6px;
+    font-size: 14px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid #c9b896;
+    font-size: 16px;
+    background: #fffef9;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--felt-red); }
+
+  .btn {
+    display: inline-block;
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--felt-red), var(--felt-red-dark));
+    color: #fffbe8;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #6d1f16, 0 6px 12px rgba(0,0,0,0.3);
+    transition: transform 0.08s ease;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #6d1f16; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.secondary {
+    background: linear-gradient(180deg, #6b8f3f, #4c7a28);
+    box-shadow: 0 4px 0 #33511b, 0 6px 12px rgba(0,0,0,0.3);
+  }
+  .btn.secondary:active { box-shadow: 0 1px 0 #33511b; }
+  .btn.ready-on {
+    background: linear-gradient(180deg, var(--gold), #a97e0e);
+    box-shadow: 0 4px 0 #7a5c0a, 0 6px 12px rgba(0,0,0,0.3);
+  }
+
+  .error-msg {
+    color: #a5231a;
+    background: #ffe3df;
+    border: 1px solid #f2a9a1;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 12px;
+    font-size: 13px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ---------- 로비 ---------- */
+  .room-code-badge {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #fffbe8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .room-code-badge b {
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    background: rgba(0,0,0,0.25);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  .player-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .player-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid #e4d7ba;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .player-list li .name-wrap { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .badge-ready {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .badge-wait {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: #f1f1f1;
+    color: #888;
+  }
+  .lobby-hint {
+    font-size: 12.5px;
+    color: #6b5a3f;
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ---------- 제시어 입력 ---------- */
+  .timer-ring-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  .timer-num {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--felt-red-dark);
+    text-align: center;
+    line-height: 1;
+  }
+  .timer-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #e6ddc4;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 6px 0 16px;
+  }
+  .timer-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--felt-red));
+    width: 100%;
+    transition: width 1s linear;
+  }
+  .word-desc {
+    font-size: 13.5px;
+    color: #6b5a3f;
+    text-align: center;
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+  .submitted-count {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 10px;
+    color: #4c7a28;
+    font-weight: 600;
+  }
+  .waiting-box {
+    text-align: center;
+    padding: 20px 0 4px;
+    color: #6b5a3f;
+    font-size: 14px;
+  }
+
+  /* ---------- 게임(공개) 화면 ---------- */
+  #screen-game { max-width: 100%; }
+  .table-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: min(62vh, 520px);
+    margin: 6px auto 0;
+  }
+  .table-surface {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    width: 56%;
+    height: 30%;
+    background: radial-gradient(ellipse at 50% 40%, #9a6b3f 0%, var(--wood) 55%, var(--wood-dark) 100%);
+    border-radius: 50%;
+    border: 6px solid #4a2c14;
+    box-shadow: 0 18px 30px rgba(0,0,0,0.35), inset 0 0 30px rgba(0,0,0,0.35);
+  }
+  .table-surface::after {
+    content: '';
+    position: absolute;
+    inset: 10%;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 220, 160, 0.35);
+  }
+
+  .other-seat {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    width: clamp(64px, 13vw, 100px);
+    text-align: center;
+  }
+
+  .word-bubble {
+    background: #fffef7;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 4px 10px;
+    font-size: clamp(11px, 2.4vw, 14px);
+    font-weight: 700;
+    color: var(--felt-red-dark);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    max-width: clamp(80px, 20vw, 140px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .word-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 6px 0 6px;
+    border-style: solid;
+    border-color: var(--gold) transparent transparent transparent;
+  }
+  .word-bubble.mine {
+    color: #999;
+    border-color: #ccc;
+    font-style: italic;
+  }
+
+  .avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.3));
+  }
+  .avatar-head {
+    width: clamp(30px, 6vw, 46px);
+    height: clamp(30px, 6vw, 46px);
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.25);
+    position: relative;
+    z-index: 2;
+  }
+  .avatar-head::after {
+    /* 얼굴 표시 (눈) */
+    content: '';
+    position: absolute;
+    top: 42%;
+    left: 27%;
+    width: 15%;
+    height: 15%;
+    background: #2b2b2b;
+    border-radius: 50%;
+    box-shadow: 18px 0 0 #2b2b2b;
+  }
+  .avatar-body {
+    width: clamp(46px, 9vw, 70px);
+    height: clamp(30px, 6vw, 44px);
+    margin-top: -6px;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top: none;
+  }
+
+  .seat-name {
+    margin-top: 4px;
+    font-size: clamp(10px, 2.2vw, 12.5px);
+    font-weight: 700;
+    color: #2c2c2c;
+    background: rgba(255,255,255,0.75);
+    padding: 1px 7px;
+    border-radius: 10px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 1인칭 시점: 내 좌석은 화면 하단 고정 HUD로 표현 */
+  .my-seat-hud {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 5;
+    background: rgba(20, 15, 8, 0.72);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    max-width: 92vw;
+  }
+  .my-seat-hud .avatar { transform: scale(0.85); }
+  .my-seat-hud .my-info { display: flex; flex-direction: column; align-items: flex-start; }
+  .my-seat-hud .my-name {
+    color: #fffbe8;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .my-word-tag {
+    margin-top: 3px;
+    background: repeating-linear-gradient(45deg, #444, #444 6px, #333 6px, #333 12px);
+    color: #ffd35c;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 3px 12px;
+    border-radius: 8px;
+    letter-spacing: 2px;
+  }
+
+  .reveal-caption {
+    text-align: center;
+    color: #fffbe8;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    font-size: 14px;
+    margin-bottom: 4px;
+    padding: 0 10px;
+  }
+
+  footer.credit {
+    margin-top: auto;
+    padding: 14px 0 6px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .table-wrap { height: min(58vh, 440px); }
+    .table-surface { width: 62%; height: 26%; top: 40%; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="sun"></div>
+  <div class="hill h1"></div>
+  <div class="hill h2"></div>
+  <div class="ger g1"><div class="roof"></div><div class="body"></div></div>
+  <div class="ger g2"><div class="roof"></div><div class="body"></div></div>
+  <div class="ger g3"><div class="roof"></div><div class="body"></div></div>
+
+  <div class="app">
+    <h1 class="title">🐎 내 머리 속 제시어 🐎</h1>
+
+    <!-- 1) 입장 화면 -->
+    <section id="screen-join" class="screen active">
+      <div class="card">
+        <h2>방 입장</h2>
+        <label for="input-nickname">닉네임</label>
+        <input type="text" id="input-nickname" maxlength="12" placeholder="예: 초원의戦士" />
+
+        <label for="input-roomcode">방 코드</label>
+        <input type="text" id="input-roomcode" maxlength="10" placeholder="예: MONGOL1" autocapitalize="characters" />
+
+        <button class="btn" id="btn-join">입장하기 / 방 만들기</button>
+        <div class="error-msg" id="join-error"></div>
+        <p class="lobby-hint">같은 방 코드를 입력하면 친구와 같은 방에서 만납니다. (최대 6명)</p>
+      </div>
+    </section>
+
+    <!-- 2) 로비 화면 -->
+    <section id="screen-lobby" class="screen">
+      <div class="card">
+        <div class="room-code-badge">방 코드 <b id="lobby-room-code">----</b></div>
+        <h2>대기실 (<span id="lobby-count">0</span>/6)</h2>
+        <ul class="player-list" id="lobby-player-list"></ul>
+        <button class="btn" id="btn-ready">준비하기</button>
+        <p class="lobby-hint">최소 2명 이상, 전원이 준비를 완료하면 자동으로 시작됩니다.</p>
+      </div>
+    </section>
+
+    <!-- 3) 제시어 입력 화면 -->
+    <section id="screen-word" class="screen">
+      <div class="card">
+        <h2>제시어를 입력하세요</h2>
+        <div class="timer-ring-wrap"><div class="timer-num" id="word-timer">30</div></div>
+        <div class="timer-bar-bg"><div class="timer-bar-fill" id="word-timer-bar"></div></div>
+        <p class="word-desc">내가 아닌 <b>다른 누군가</b>가 받게 될 제시어를 하나 입력해주세요.<br/>(무작위로 섞여 배정되며, 본인이 낸 단어는 본인이 받지 않습니다)</p>
+        <input type="text" id="input-word" maxlength="20" placeholder="예: 낙타" />
+        <button class="btn secondary" id="btn-submit-word">제출하기</button>
+        <div class="waiting-box" id="word-waiting" style="display:none;">✅ 제출 완료! 다른 목동들을 기다리는 중...</div>
+        <div class="submitted-count" id="word-submitted-count"></div>
+      </div>
+    </section>
+
+    <!-- 4) 게임(공개) 화면 -->
+    <section id="screen-game" class="screen">
+      <p class="reveal-caption">테이블 너머 사람들의 머리 위 제시어가 보입니다. 내 것만 나에게는 보이지 않아요!</p>
+      <div class="table-wrap">
+        <div class="table-surface"></div>
+        <div id="others-arc"></div>
+      </div>
+    </section>
+
+    <footer class="credit">© 몽골 초원 제시어 게임 · Node.js + Socket.io</footer>
+  </div>
+
+  <!-- 내 좌석 HUD (1인칭 시점: 내 아바타는 테이블 건너편이 아닌 화면 하단 고정) -->
+  <div class="my-seat-hud" id="my-seat-hud" style="display:none;">
+    <div class="avatar">
+      <div class="avatar-head" id="my-avatar-head"></div>
+      <div class="avatar-body" id="my-avatar-body"></div>
+    </div>
+    <div class="my-info">
+      <div class="my-name" id="my-hud-name">나</div>
+      <div class="my-word-tag" id="my-hud-word">???</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const AVATAR_COLORS = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#e67e22'];
+
+    let myId = null;
+    let myNickname = '';
+    let latestPlayers = []; // room_update 기준 (id, nickname, ready, submitted)
+
+    // ---------- 화면 전환 ----------
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach((el) => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function colorForIndex(i) {
+      return AVATAR_COLORS[i % AVATAR_COLORS.length];
+    }
+
+    // ---------- 1) 입장 ----------
+    const joinErrorEl = document.getElementById('join-error');
+    document.getElementById('btn-join').addEventListener('click', () => {
+      const nickname = document.getElementById('input-nickname').value.trim();
+      const roomCode = document.getElementById('input-roomcode').value.trim();
+      joinErrorEl.classList.remove('show');
+
+      if (!nickname || !roomCode) {
+        joinErrorEl.textContent = '닉네임과 방 코드를 모두 입력해주세요.';
+        joinErrorEl.classList.add('show');
+        return;
+      }
+
+      socket.emit('join_room', { nickname, roomCode }, (res) => {
+        if (!res || !res.ok) {
+          joinErrorEl.textContent = (res && res.message) || '입장에 실패했습니다.';
+          joinErrorEl.classList.add('show');
+          return;
+        }
+        myId = res.myId;
+        myNickname = nickname;
+        document.getElementById('lobby-room-code').textContent = res.code;
+        showScreen('screen-lobby');
+      });
+    });
+
+    // ---------- 2) 로비 ----------
+    let iAmReady = false;
+    document.getElementById('btn-ready').addEventListener('click', () => {
+      socket.emit('toggle_ready');
+    });
+
+    function renderLobby(data) {
+      document.getElementById('lobby-count').textContent = data.players.length;
+      const list = document.getElementById('lobby-player-list');
+      list.innerHTML = '';
+      data.players.forEach((p, i) => {
+        const li = document.createElement('li');
+        const nameWrap = document.createElement('div');
+        nameWrap.className = 'name-wrap';
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.style.background = colorForIndex(i);
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = p.nickname + (p.id === myId ? ' (나)' : '');
+        nameWrap.appendChild(dot);
+        nameWrap.appendChild(nameSpan);
+
+        const badge = document.createElement('span');
+        badge.className = p.ready ? 'badge-ready' : 'badge-wait';
+        badge.textContent = p.ready ? '준비 완료' : '대기중';
+
+        li.appendChild(nameWrap);
+        li.appendChild(badge);
+        list.appendChild(li);
+
+        if (p.id === myId) iAmReady = p.ready;
+      });
+
+      const btnReady = document.getElementById('btn-ready');
+      btnReady.textContent = iAmReady ? '준비 취소' : '준비하기';
+      btnReady.classList.toggle('ready-on', iAmReady);
+    }
+
+    // ---------- 3) 제시어 입력 ----------
+    let hasSubmittedWord = false;
+    const wordInputEl = document.getElementById('input-word');
+    const btnSubmitWord = document.getElementById('btn-submit-word');
+
+    btnSubmitWord.addEventListener('click', submitWord);
+    wordInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitWord();
+    });
+
+    function submitWord() {
+      const word = wordInputEl.value.trim();
+      if (!word || hasSubmittedWord) return;
+      socket.emit('submit_word', { word });
+      hasSubmittedWord = true;
+      wordInputEl.disabled = true;
+      btnSubmitWord.disabled = true;
+      document.getElementById('word-waiting').style.display = 'block';
+    }
+
+    socket.on('word_phase_start', (data) => {
+      hasSubmittedWord = false;
+      wordInputEl.value = '';
+      wordInputEl.disabled = false;
+      btnSubmitWord.disabled = false;
+      document.getElementById('word-waiting').style.display = 'none';
+      document.getElementById('word-timer').textContent = data.duration;
+      document.getElementById('word-timer-bar').style.width = '100%';
+      showScreen('screen-word');
+    });
+
+    socket.on('timer_update', (data) => {
+      const t = Math.max(0, data.timeLeft);
+      document.getElementById('word-timer').textContent = t;
+      document.getElementById('word-timer-bar').style.width = (t / 30 * 100) + '%';
+    });
+
+    // ---------- 4) 공개(reveal) 화면 : 1인칭 아크 배치 ----------
+    function renderReveal(data) {
+      showScreen('screen-game');
+
+      const me = data.players.find((p) => p.isMe);
+      const others = data.players.filter((p) => !p.isMe);
+
+      // 내 좌석 HUD
+      const hud = document.getElementById('my-seat-hud');
+      hud.style.display = 'flex';
+      document.getElementById('my-hud-name').textContent = (me ? me.nickname : myNickname) + ' (나)';
+      document.getElementById('my-hud-word').textContent = '???';
+      const myColorIndex = data.players.findIndex((p) => p.isMe);
+      const myColor = colorForIndex(myColorIndex >= 0 ? myColorIndex : 0);
+      document.getElementById('my-avatar-head').style.background = myColor;
+      document.getElementById('my-avatar-body').style.background = myColor;
+
+      // 다른 플레이어들: 테이블 건너편에 부채꼴(arc)로 배치
+      const arcContainer = document.getElementById('others-arc');
+      arcContainer.innerHTML = '';
+      const n = others.length;
+
+      others.forEach((p, i) => {
+        let angleDeg;
+        if (n === 1) {
+          angleDeg = 90;
+        } else {
+          angleDeg = 165 - (150 / (n - 1)) * i; // 165도(왼쪽) ~ 15도(오른쪽) 부채꼴로 분산
+        }
+        const rad = (angleDeg * Math.PI) / 180;
+        const leftPct = 50 + 40 * Math.cos(rad);
+        const topPct = 50 - 38 * Math.sin(rad);
+
+        const globalIndex = data.players.findIndex((pl) => pl.id === p.id);
+        const color = colorForIndex(globalIndex >= 0 ? globalIndex : i);
+
+        const seat = document.createElement('div');
+        seat.className = 'other-seat';
+        seat.style.left = leftPct + '%';
+        seat.style.top = topPct + '%';
+
+        seat.innerHTML = `
+          <div class="word-bubble">${escapeHtml(p.assignedWord || '???')}</div>
+          <div class="avatar">
+            <div class="avatar-head" style="background:${color};"></div>
+            <div class="avatar-body" style="background:${color};"></div>
+          </div>
+          <div class="seat-name">${escapeHtml(p.nickname)}</div>
+        `;
+        arcContainer.appendChild(seat);
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ---------- 공통: 방 상태 업데이트 ----------
+    socket.on('room_update', (data) => {
+      latestPlayers = data.players;
+      if (data.phase === 'lobby') {
+        renderLobby(data);
+      } else if (data.phase === 'wordInput') {
+        const submitted = data.players.filter((p) => p.submitted).length;
+        document.getElementById('word-submitted-count').textContent =
+          `${submitted} / ${data.players.length} 명 제출 완료`;
+      }
+    });
+
+    socket.on('game_start', (data) => {
+      renderReveal(data);
+    });
+
+    socket.on('disconnect', () => {
+      joinErrorEl.textContent = '서버와의 연결이 끊어졌습니다. 새로고침 해주세요.';
+      joinErrorEl.classList.add('show');
+    });
+  </script>
+</body>
+</html>
